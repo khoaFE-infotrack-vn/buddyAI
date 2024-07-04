@@ -1,45 +1,21 @@
-# # Use the official Python image from the Docker Hub
-# FROM python:3.8-slim
-
-# # Set the working directory in the container
-# WORKDIR /app
-
-# # Copy the requirements file into the container
-# COPY requirements.txt .
-
-# # Install the required dependencies
-# RUN pip install --no-cache-dir -r requirements.txt
-
-# # Copy the rest of the application code into the container
-# COPY . .
-
-# # Expose the port that Streamlit uses
-# EXPOSE 8501
-
-# # Command to run the Streamlit app
-# CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-
 # Use the official Python image from the Docker Hub
-FROM python:3.8-slim
+FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Install the required dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install fastapi uvicorn python-dotenv
+# Install any needed packages specified in requirements.txt
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get install -y libblas-dev liblapack-dev && \
+    pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Copy the rest of the application code into the container
-COPY . .
+# Make port 80 available to the world outside this container
+EXPOSE 80
 
-# Copy the docs folder into the container
-COPY docs /app/docs
-
-# Expose the port that FastAPI uses
-EXPOSE 8000
-
-# Command to run the FastAPI app
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run main.py when the container launches
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "80"]
